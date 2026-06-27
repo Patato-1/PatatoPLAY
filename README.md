@@ -28,6 +28,24 @@
 - 已完成：环境配置、14 周计划制定
 - 当前：W1 Python 基础
 
+## 🔄 如何更新到 GitHub
+
+**每周完成学习后**：
+
+1. 双击运行 `更新到GitHub.bat`
+2. 输入本周做了什么（例如：W1周一练习完成）
+3. 回车，自动 push 到 GitHub
+
+或者在终端运行：
+```bash
+cd "C:\Users\Administrator\Desktop\Ailearning\AI学习"
+git add .
+git commit -m "W1完成"
+git push
+```
+
+---
+
 ## 🔗 联系方式
 
 - GitHub: [@Patato-1](https://github.com/Patato-1)

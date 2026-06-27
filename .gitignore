@@ -3,6 +3,12 @@
 *.key
 .env.local
 
+# Claude / Cursor
+.claude/
+
+# SSH 私钥/公钥/配置（绝不能提交）
+.ssh/
+
 # Python
 __pycache__/
 *.pyc
@@ -16,11 +22,16 @@ env/
 .vscode/
 .idea/
 *.swp
+*.swo
+*~
 
-# OS
-.DS_Store
+# Windows 系统文件
 Thumbs.db
+Desktop.ini
+ehthumbs.db
+$RECYCLE.BIN/
 
-# 临时文件
+# 日志与临时
 *.log
 *.tmp
+.DS_Store

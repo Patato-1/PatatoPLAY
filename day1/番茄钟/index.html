@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pomodoro Timer · 番茄钟</title>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --text: #1a1a1a;
+      --text-soft: #9ca3af;
+      --text-muted: #6b7280;
+      --accent: #ef4444;
+      --accent-soft: #fee2e2;
+      --border: #f3f4f6;
+      --button-bg: #ffffff;
+      --button-hover: #f9fafb;
+      --radius-circle: 140;
+      --circumference: 879.65;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      height: 100%;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+        "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    .app {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 48px;
+      padding: 24px;
+    }
+
+    .header {
+      text-align: center;
+      letter-spacing: 0.3em;
+      color: var(--text-soft);
+      font-size: 12px;
+      font-weight: 500;
+      text-transform: uppercase;
+    }
+
+    /* 圆环区域 */
+    .ring-wrapper {
+      position: relative;
+      width: 320px;
+      height: 320px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .ring-svg {
+      width: 100%;
+      height: 100%;
+      transform: rotate(-90deg);
+    }
+
+    .ring-track {
+      fill: none;
+      stroke: var(--accent-soft);
+      stroke-width: 8;
+    }
+
+    .ring-progress {
+      fill: none;
+      stroke: var(--accent);
+      stroke-width: 8;
+      stroke-linecap: round;
+      stroke-dasharray: var(--circumference);
+      stroke-dashoffset: 0;
+      transition: stroke-dashoffset 0.95s linear;
+    }
+
+    .time-display {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .time-text {
+      font-size: 64px;
+      font-weight: 300;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
+    }
+
+    .time-status {
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      color: var(--text-soft);
+      text-transform: uppercase;
+    }
+
+    /* 按钮区 */
+    .controls {
+      display: flex;
+      gap: 12px;
+    }
+
+    .btn {
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: 0.05em;
+      padding: 12px 28px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--button-bg);
+      color: var(--text);
+      cursor: pointer;
+      transition: background 0.2s ease, border-color 0.2s ease,
+        transform 0.1s ease, color 0.2s ease;
+      user-select: none;
+    }
+
+    .btn:hover:not(:disabled) {
+      background: var(--button-hover);
+      border-color: #e5e7eb;
+    }
+
+    .btn:active:not(:disabled) {
+      transform: translateY(1px);
+    }
+
+    .btn:disabled {
+      color: var(--text-soft);
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #ffffff;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: #dc2626;
+      border-color: #dc2626;
+    }
+
+    /* ============ 下班提醒弹窗 ============ */
+    .reminder-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      animation: fadeIn 0.25s ease;
+    }
+
+    .reminder-overlay.is-visible {
+      display: flex;
+    }
+
+    .reminder-card {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 40px 48px;
+      width: min(420px, calc(100vw - 48px));
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08);
+      text-align: center;
+      animation: popIn 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+    }
+
+    .reminder-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: var(--accent-soft);
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      margin: 0 auto 20px;
+      line-height: 1;
+    }
+
+    .reminder-title {
+      font-size: 20px;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 8px;
+      letter-spacing: -0.01em;
+    }
+
+    .reminder-desc {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-bottom: 28px;
+    }
+
+    .reminder-countdown {
+      font-size: 12px;
+      color: var(--text-soft);
+      letter-spacing: 0.1em;
+      margin-bottom: 24px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .reminder-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+    }
+
+    .reminder-actions .btn {
+      flex: 1;
+      padding: 12px 20px;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes popIn {
+      from { opacity: 0; transform: scale(0.92); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    /* 调试按钮：放在页面右下角的小灰按钮 */
+    .debug-btn {
+      position: fixed;
+      bottom: 16px;
+      right: 16px;
+      font-family: inherit;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      padding: 8px 14px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: #ffffff;
+      color: var(--text-soft);
+      cursor: pointer;
+      text-transform: uppercase;
+      transition: color 0.2s ease, border-color 0.2s ease;
+    }
+
+    .debug-btn:hover {
+      color: var(--text-muted);
+      border-color: #e5e7eb;
+    }
+
+    /* 响应式：屏幕较小时缩小圆环 */
+    @media (max-width: 420px) {
+      .ring-wrapper {
+        width: 280px;
+        height: 280px;
+      }
+      .time-text {
+        font-size: 52px;
+      }
+      .controls {
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <h1 class="header">Pomodoro Timer</h1>
+
+    <div class="ring-wrapper">
+      <svg class="ring-svg" viewBox="0 0 320 320" aria-hidden="true">
+        <circle
+          class="ring-track"
+          cx="160"
+          cy="160"
+          r="140"
+        />
+        <circle
+          class="ring-progress"
+          id="progress"
+          cx="160"
+          cy="160"
+          r="140"
+        />
+      </svg>
+      <div class="time-display">
+        <div class="time-text" id="time">25:00</div>
+        <div class="time-status" id="status">Ready</div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-primary" id="startBtn" type="button">开始</button>
+      <button class="btn" id="pauseBtn" type="button" disabled>暂停</button>
+      <button class="btn" id="resetBtn" type="button">重置</button>
+    </div>
+  </main>
+
+  <!-- 下班提醒弹窗 -->
+  <div class="reminder-overlay" id="reminderOverlay" role="dialog" aria-modal="true" aria-labelledby="reminderTitle">
+    <div class="reminder-card">
+      <div class="reminder-icon" aria-hidden="true">🍅</div>
+      <h2 class="reminder-title" id="reminderTitle">到点下班啦</h2>
+      <p class="reminder-desc">辛苦了一天，记得收拾好东西，关上电脑，享受属于自己的时间。</p>
+      <div class="reminder-countdown" id="reminderCountdown" hidden></div>
+      <div class="reminder-actions">
+        <button class="btn" id="remindCancelBtn" type="button">取消</button>
+        <button class="btn btn-primary" id="remindConfirmBtn" type="button">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 调试按钮：手动触发提醒，方便测试 -->
+  <button class="debug-btn" id="debugBtn" type="button" title="立即测试下班提醒">测试提醒</button>
+
+  <script>
+    (function () {
+      'use strict';
+
+      // ---- 配置 ----
+      const TOTAL_SECONDS = 25 * 60; // 25 分钟
+      const CIRCUMFERENCE = 879.65;   // 2 * π * 140
+
+      // ---- DOM ----
+      const timeEl = document.getElementById('time');
+      const statusEl = document.getElementById('status');
+      const progressEl = document.getElementById('progress');
+      const startBtn = document.getElementById('startBtn');
+      const pauseBtn = document.getElementById('pauseBtn');
+      const resetBtn = document.getElementById('resetBtn');
+
+      // ---- 状态 ----
+      let remaining = TOTAL_SECONDS;
+      let intervalId = null;
+
+      // ---- 渲染 ----
+      function formatTime(seconds) {
+        const m = Math.floor(seconds / 60);
+        const s = seconds % 60;
+        return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+      }
+
+      function render() {
+        timeEl.textContent = formatTime(remaining);
+        const offset = CIRCUMFERENCE * (1 - remaining / TOTAL_SECONDS);
+        progressEl.style.strokeDashoffset = offset;
+      }
+
+      function setStatus(text) {
+        statusEl.textContent = text;
+      }
+
+      function updateButtons() {
+        const running = intervalId !== null;
+        startBtn.disabled = running;
+        pauseBtn.disabled = !running;
+      }
+
+      // ---- 控制 ----
+      function start() {
+        if (intervalId !== null) return; // 已经在跑
+        if (remaining <= 0) return;      // 已经结束
+
+        setStatus('Focusing');
+        intervalId = setInterval(tick, 1000);
+        updateButtons();
+      }
+
+      function pause() {
+        if (intervalId === null) return;
+        clearInterval(intervalId);
+        intervalId = null;
+        setStatus('Paused');
+        updateButtons();
+      }
+
+      function reset() {
+        if (intervalId !== null) {
+          clearInterval(intervalId);
+          intervalId = null;
+        }
+        remaining = TOTAL_SECONDS;
+        setStatus('Ready');
+        render();
+        updateButtons();
+      }
+
+      function tick() {
+        remaining -= 1;
+        if (remaining <= 0) {
+          remaining = 0;
+          render();
+          clearInterval(intervalId);
+          intervalId = null;
+          setStatus('Done');
+          updateButtons();
+          // 极简反馈：弹一个原生提示
+          alert('时间到！该休息一下了 🍅');
+          return;
+        }
+        render();
+      }
+
+      // ---- 事件绑定 ----
+      startBtn.addEventListener('click', start);
+      pauseBtn.addEventListener('click', pause);
+      resetBtn.addEventListener('click', reset);
+
+      // ---- 初始化 ----
+      render();
+      updateButtons();
+
+      // ====================================================
+      //             下班提醒模块
+      // ====================================================
+      (function reminderModule() {
+        'use strict';
+
+        const REMIND_HOUR = 19;          // 19:00
+        const REMIND_MINUTE = 0;
+        const SNOOZE_MS = 30 * 60 * 1000; // 半小时后再提醒
+        const STORAGE_KEY = 'pomodoro_offwork_state';
+
+        // ---- DOM ----
+        const overlay = document.getElementById('reminderOverlay');
+        const countdownEl = document.getElementById('reminderCountdown');
+        const confirmBtn = document.getElementById('remindConfirmBtn');
+        const cancelBtn = document.getElementById('remindCancelBtn');
+        const debugBtn = document.getElementById('debugBtn');
+
+        // ---- 状态（用 localStorage 持久化） ----
+        // state 形如：{ date: 'YYYY-MM-DD', mode: 'done' | 'snoozed', snoozeUntil: timestamp }
+        function loadState() {
+          try {
+            const raw = localStorage.getItem(STORAGE_KEY);
+            return raw ? JSON.parse(raw) : null;
+          } catch (_) {
+            return null;
+          }
+        }
+        function saveState(state) {
+          try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+          } catch (_) { /* 忽略写入失败 */ }
+        }
+        function clearState() {
+          try { localStorage.removeItem(STORAGE_KEY); } catch (_) {}
+        }
+
+        function todayKey(d) {
+          const y = d.getFullYear();
+          const m = String(d.getMonth() + 1).padStart(2, '0');
+          const day = String(d.getDate()).padStart(2, '0');
+          return `${y}-${m}-${day}`;
+        }
+
+        function todayTargetTime(d) {
+          const t = new Date(d);
+          t.setHours(REMIND_HOUR, REMIND_MINUTE, 0, 0);
+          return t;
+        }
+
+        // ---- 弹窗控制 ----
+        let countdownTimerId = null;
+
+        function showReminder(showCountdown) {
+          if (document.visibilityState !== 'visible') return; // 页面不可见不弹
+
+          // 暂停番茄钟计时，避免同时进行
+          if (typeof pause === 'function' && intervalId !== null) {
+            pause();
+          }
+
+          overlay.classList.add('is-visible');
+
+          if (showCountdown && countdownTimerId === null) {
+            countdownEl.hidden = false;
+            const updateCountdown = () => {
+              const state = loadState();
+              if (!state || state.mode !== 'snoozed') {
+                countdownEl.hidden = true;
+                clearInterval(countdownTimerId);
+                countdownTimerId = null;
+                return;
+              }
+              const ms = state.snoozeUntil - Date.now();
+              if (ms <= 0) {
+                countdownEl.hidden = true;
+                return;
+              }
+              const mm = Math.floor(ms / 60000);
+              const ss = Math.floor((ms % 60000) / 1000);
+              countdownEl.textContent = `${String(mm).padStart(2, '0')}:${String(ss).padStart(2, '0')} 后再次提醒`;
+            };
+            updateCountdown();
+            countdownTimerId = setInterval(updateCountdown, 1000);
+          } else {
+            countdownEl.hidden = true;
+          }
+        }
+
+        function hideReminder() {
+          overlay.classList.remove('is-visible');
+          if (countdownTimerId !== null) {
+            clearInterval(countdownTimerId);
+            countdownTimerId = null;
+          }
+          countdownEl.hidden = true;
+        }
+
+        // ---- 业务逻辑 ----
+        function onConfirm() {
+          // 当天不再提醒
+          saveState({ date: todayKey(new Date()), mode: 'done' });
+          hideReminder();
+        }
+
+        function onCancel() {
+          // 半小时后再提醒一次
+          const until = Date.now() + SNOOZE_MS;
+          saveState({ date: todayKey(new Date()), mode: 'snoozed', snoozeUntil: until });
+          hideReminder();
+        }
+
+        // ---- 调度：每分钟检查一次 ----
+        function checkSchedule() {
+          const now = new Date();
+          const state = loadState();
+          const today = todayKey(now);
+
+          // 跨天了：清空旧状态
+          if (state && state.date !== today) {
+            clearState();
+          }
+
+          const fresh = loadState(); // 重新读取
+
+          // 1) 是否有"半小时后再提醒"到期
+          if (fresh && fresh.mode === 'snoozed' && fresh.snoozeUntil <= now.getTime()) {
+            showReminder(false);
+            return;
+          }
+
+          // 2) 是否到了 19:00，且今天还没"确定"
+          const target = todayTargetTime(now);
+          const isPast = now >= target;
+          const isBeforeSnooze = !fresh || fresh.mode !== 'snoozed';
+
+          if (isPast && isBeforeSnooze && (!fresh || fresh.mode !== 'done')) {
+            const showCountdown = fresh && fresh.mode === 'snoozed';
+            showReminder(showCountdown);
+          }
+        }
+
+        // ---- 事件绑定 ----
+        confirmBtn.addEventListener('click', onConfirm);
+        cancelBtn.addEventListener('click', onCancel);
+        debugBtn.addEventListener('click', () => {
+          // 调试模式：临时把状态设为"今天已确定"以外的可用形态，让弹窗走普通文案
+          const state = loadState();
+          if (state) clearState();
+          showReminder(false);
+        });
+
+        // ---- 启动 ----
+        // 立即检查一次
+        checkSchedule();
+        // 每 30 秒检查一次，平衡响应速度与性能
+        setInterval(checkSchedule, 30 * 1000);
+        // 页面从后台切回前台时也检查一次
+        document.addEventListener('visibilitychange', () => {
+          if (document.visibilityState === 'visible') checkSchedule();
+        });
+      })();
+    })();
+  </script>
+</body>
+</html>

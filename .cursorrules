@@ -1,0 +1,36 @@
+# AI 学习专栏
+
+## 用户信息
+
+- 背景：专科、零基础编程
+- 目标：2026 年 10 月入职上海/深圳 AI 应用开发工程师
+- 学习时间：周一-周五 2-3h/天，周末 12h/天
+- 启动日期：2026/6/27
+
+## 当前进度
+
+- 当前阶段：W1 (6/29-7/5) Python 基础
+- 已完成：环境配置、DeepSeek API 注册、计划制定
+- 待开始：W1 黑马 Python P1-P30
+
+## 学习纪律
+
+1. 周末大块时间做重活（项目、调试）
+2. 工作日看教程、写笔记
+3. 每周必有一个可演示项目
+4. 卡住超过 1 小时就跳过
+5. 每天 GitHub commit，保持绿色贡献图
+
+## Cursor 使用提示
+
+- 用户提问时优先用中文回答
+- 代码示例默认 Python
+- LLM API 默认使用 DeepSeek (base_url: https://api.deepseek.com)
+- 用户是零基础，解释要详细，避免一次给太多概念
+
+## 相关资源
+
+- DeepSeek 文档：https://api-docs.deepseek.com/
+- LangChain 中文：https://python.langchain.com/
+- Anthropic Prompt：https://docs.anthropic.com/
+- Datawhale 教程：datawhalechina.github.io

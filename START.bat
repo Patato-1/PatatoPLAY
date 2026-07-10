@@ -8,8 +8,8 @@ start "GitHub Auto Sync" /min cmd /c "cd /d C:\Users\Administrator\Desktop\pytho
 echo ✅ GitHub 自动同步已在后台启动
 echo 📄 正在打开 PLAY.py...
 
-:: 打开 PLAY.py（用系统默认程序）
-start "" /wait "C:\Users\Administrator\Desktop\pythonPLAY\PLAY.py"
+:: 用 Python 运行 PLAY.py
+"C:\Users\Administrator\AppData\Local\Programs\Python\Python314\python.exe" "C:\Users\Administrator\Desktop\pythonPLAY\PLAY.py"
 
 :: PLAY.py 关闭后，结束同步进程
 taskkill /fi "WINDOWTITLE eq GitHub Auto Sync*" /f >nul 2>&1

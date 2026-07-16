@@ -52,7 +52,7 @@
 #     print("欢迎来到学校")
 # elif score <= 600:
 #     print("兄弟去复读吧")
-from operator import ifloordiv
+
 
 #项目：结合用户账号密码判断账密码是否正确，都正确登录成功，否则失败；
 # a = int(input("请输入账号"))
@@ -175,3 +175,99 @@ from operator import ifloordiv
 #         print("角色跳跃")
 #     case _:
 #         print("无效输出")
+# sun = 0
+# i = 1
+# while i<=100:
+#     if i % 2 ==1:
+#         sun = sun + i
+#     i += 1
+# print(f"输出之和是{sun}")
+
+# sum = 0
+# i = 1
+# while i<= 100:
+#     if i % 2 == 0:  # 只有偶数才能通过if，赋值给i的只能是偶数。
+#         sum += i    # sum只能是偶数相加，因为奇数通过不了if，所以sum只能两次两次的相加
+#     i += 1          # i的累加次数，每次都累加一次
+# print(f"所有偶数和是：{sum}")
+#
+# for循环
+# a = input("请输入你要编历的字符串：")
+# for s in a:
+#     print(f"{s}")
+# else:
+#     print("输出结束")
+# for i in  range(1,10):===================================输出从1到9
+#     for j in range(1,i+1):===================================
+#         print(f"{i}X{j}={i * j}",end="\t") ===========================end="\t"禁止换行并且空出一格
+#
+#     print() =================自动换行：
+
+# 案例1打印边长为5的等腰直角三角形
+# for i in range(1,6):
+#     for j in range(1,i+1):
+#         print("*",end = "\t" )
+#     print( )
+# 案例2做一个数字金字塔；
+# for i in range(1,7):
+#      for j in range(1,i+1):
+#          print(f"{j}",end=" ")
+#      print()
+# 案例3做一个国际象棋；
+# for i in range(8):
+#     for j in range(8):
+#         if j % 2 == 1:
+#             print(1, end=" ")
+#         elif j % 2 == 0:
+#             print(0, end=" ")
+#     print()
+#
+#需求，用户名密码登录，正确的用户名和密码为admin/666888、zhangge/666888、taoge666/888666有5次登录机会，输入错误5次，不允许在操作了
+num = 0
+while True:
+    if num >= 5:
+        print("警告!,不能登录")
+        break
+    name = input("账号")
+    passwork = input("密码")
+
+    if name == "admin" and passwork == "666888":
+        print("登录成功")
+        break
+    elif name == "zhangsan" and passwork == "123456":
+        print("登录成功")
+        break
+    elif name == "taoge" and passwork == "888666":
+        print("登录成功")
+        break
+    elif name == "" or passwork == "":
+        print("您的账号密码为空，请重新登录")
+        continue
+    else:
+        print("登录失败请重新登录")
+        num = num + 1
+        continue
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
